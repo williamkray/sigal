@@ -40,19 +40,14 @@ from datetime import datetime
 from PIL import Image as PILImage
 from PIL import ImageFile, ImageOps, IptcImagePlugin
 from PIL.ExifTags import GPSTAGS, TAGS
+from PIL.Image import Exif
 
 import pilkit.processors
 from pilkit.processors import Transpose
 from pilkit.utils import save_image
 
-try:
-    # Pillow 6.0 added a class allowing to write Exif data
-    from PIL.Image import Exif
-except ImportError:
-    Exif = None
-
 from . import signals, utils
-from .settings import Status, get_thumb
+from .settings import Status
 
 try:
     # Pillow 7.2+
@@ -79,8 +74,8 @@ def _read_image(file_path):
         im = PILImage.open(file_path)
 
     for w in caught_warnings:
-        logger.warning(f'PILImage reported a warning for file {file_path}\n'
-                       f'{w.category}: {w.message}')
+        logger.info(f'PILImage reported a warning for file {file_path}\n'
+                    f'{w.category}: {w.message}')
     return im
 
 
@@ -124,15 +119,8 @@ def generate_image(source, outname, settings, options=None):
             pass
         else:
             if copy_exif and 'exif' in options:
-                if Exif is not None:
-                    # reset the orientation flag
-                    options['exif'][0x0112] = 1
-                else:
-                    logger.warning(
-                        "'autorotate_images' and 'copy_exif_data' settings "
-                        "are not compatible when using Pillow < 6.0, because "
-                        "Sigal can't save the modified Orientation tag."
-                    )
+                # reset the orientation flag
+                options['exif'][0x0112] = 1
 
     # Resize the image
     if settings['img_processor']:
