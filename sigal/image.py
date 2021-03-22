@@ -180,7 +180,7 @@ def process_image(media):
         options = media.settings['jpg_options']
     elif media.src_ext == '.png':
         options = {'optimize': True}
-    elif media.src_ext == '.gif':
+    elif media.src_ext in ('.gif', '.GIF'):
         options = {'save_all': True}
     else:
         options = {}
